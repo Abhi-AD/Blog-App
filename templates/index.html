@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+{% block content %}
 <h1>Hello World!</h1>
 <p>This is a simple Hello program written in C++.</p>
 <p>My name is {{firstname}} {{lastname}}</p>
@@ -5,14 +7,17 @@
 <p>Fruit List:</p>
 
 {% for fruit in dictfruit %}
-     {% if fruit == 13 %}
-          {{fruit+84512010}}
-     {% else %}
-          {{fruit}}</br>
-     {% endif %}
+{% if fruit == 13 %}
+{{fruit+84512010}}
+{% else %}
+{{fruit}}</br>
+{% endif %}
 {% endfor %}
 </br></br></br>
 {{dictfruit.0|reverse}}
 
 
 
+
+
+{% endblock content %}
