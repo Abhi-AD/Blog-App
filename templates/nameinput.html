@@ -3,8 +3,18 @@
 {% block content %}
 
 
+
+
+
 {% if name %}
 <h1>Welcome to Flask Using Blog App{{name}}!!</h1>
+<br>
+<img src="{{ url_for('static', filename='img/IMG_7058.JPG') }}" alt="" width="600">
+<br><br>
+<div id="demo">fvbb</div>
+
+
+<br>
 {% else %}
 <h1>What's Your Name?</h1>
 <br>

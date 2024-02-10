@@ -1,5 +1,5 @@
 # import list
-from flask import Flask, render_template
+from flask import Flask, render_template, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -22,6 +22,7 @@ def home():
     first_name = "Abhishek"
     last_name = "Dangi"
     stuff = "This is some <strong>random</strong> text."
+    flash("Welcome to Flask Blog App")
     dict_fruit = ["mango", "apple", "orange", 13]
     return render_template(
         "index.html",
@@ -62,4 +63,5 @@ def name():
     if form.validate_on_submit():
         name = form.name.data
         form.name.data = ""
+        flash("Form submit succes")
     return render_template("nameinput.html", name=name, form=form)

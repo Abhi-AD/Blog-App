@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
+{% for messages in get_flashed_messages() %}
+
+
+{% endfor %}
 <h1>Hello World!</h1>
 <p>This is a simple Hello program written in C++.</p>
 <p>My name is {{firstname}} {{lastname}}</p>
