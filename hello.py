@@ -3,13 +3,36 @@ from flask import Flask, render_template, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from flask_sqlalchemy import DataRequired
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 
 # create a flask instance
 app = Flask(__name__)
+# add the database
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+db = SQLAlchemy(app)
+
+# secret  key for form validation
 app.config["SECRET_KEY"] = "secretkey"
+
+
+# create a model
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    data_added = db.Column(db.DateTime, default=datetime.utcnow())
+
+    def __repr__(self):
+        return "<Name %r>" % self.name
+
+
+# Create a Form Class User
+class UserForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 
 # Create a Form Class
@@ -41,18 +64,18 @@ def user(name):
     return render_template("user.html", username=name)
 
 
-# create a cusotm error
+# create a custom error
 
 
-# invaild url
+# invalid URL
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
 
 
-# Internal Server Erro
+# Internal Server Error
 @app.errorhandler(500)
-def page_not_found(e):
+def internal_server_error(e):
     return render_template("500.html"), 500
 
 
@@ -65,5 +88,36 @@ def name():
     if form.validate_on_submit():
         name = form.name.data
         form.name.data = ""
-        flash("Form submit succes")
+        flash("Form submit success")
     return render_template("nameinput.html", name=name, form=form)
+
+
+@app.route("/user/add", methods=["GET", "POST"])
+def add_user():
+    name = None
+    form = UserForm()
+    our_users = Users.query.order_by(Users.data_added)  # Define our_users here
+    if form.validate_on_submit():
+        with app.app_context():  # Create an application context
+            user = Users.query.filter_by(email=form.email.data).first()
+            if user is None:
+                user = Users(name=form.name.data, email=form.email.data)
+                db.session.add(user)
+                db.session.commit()
+                flash("User Added Successfully!")
+                # Refresh the users list after adding a new user
+                our_users = Users.query.order_by(Users.data_added)
+            else:
+                flash("User already exists!")
+            name = form.name.data
+            form.name.data = ""
+            form.email.data = ""
+    return render_template("add_user.html", form=form, name=name, our_users=our_users)
+
+
+# Create database tables
+with app.app_context():  # Create an application context
+    db.create_all()
+
+if __name__ == "__main__":
+    app.run(debug=True)
