@@ -10,7 +10,10 @@ from datetime import datetime
 # create a flask instance
 app = Flask(__name__)
 # add the database
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+# # odd SQlITE DB
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+# New DB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/flaskcrud'
 db = SQLAlchemy(app)
 
 # secret  key for form validation
