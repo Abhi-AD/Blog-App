@@ -10,25 +10,31 @@
 <h1>Update User</h1>
 <br><br>
 <table class="table table-hover table-bordered">
-     <thead>
-         <tr>
-             <th>ID</th>
-             <th>Name</th>
-             <th>Email</th>
-             <th>Favorite Color</th>
-         </tr>
-     </thead>
-     <tbody>
-         {% for our_user in our_users %}
-         <tr>
-             <td>{{ our_user.id }}</td>
-             <td>{{ our_user.name }}</td>
-             <td>{{ our_user.email }}</td>
-             <td>{{ our_user.favorite_color }}</td>
-         </tr>
-         {% endfor %}
-     </tbody>
- </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Favorite Color</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for our_user in our_users %}
+        <tr>
+            <td>{{ our_user.id }}</td>
+            <td>{{ our_user.name }}</td>
+            <td>{{ our_user.email }}</td>
+            <td>{{ our_user.favorite_color }}</td>
+            <td>
+                <a href="{{url_for('update', id = our_user.id )}}" class="btn btn-primary">Update</a>
+                <a href="{{url_for('delete', id = our_user.id )}}" class="btn btn-danger">Delete</a>
+            </td>
+            =
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 
 
@@ -38,20 +44,22 @@
 <h1>Update User:</h1>
 <br>
 <div class="shadow p-3 mb-5 bg-white rounded">
-     <form action="/update/{{name_to_update.id}}" method="POST">
-          {{form.hidden_tag()}}
-          {{form.name.label(class="form-label")}}
-          {{form.name(class="form-control", value = name_to_update.name)}}
-          <br>
-          {{form.email.label(class="form-label")}}
-          {{form.email(class="form-control", value = name_to_update.email)}}
-          <br>
-          {{form.favorite_color.label(class="form-label")}}
-          {{form.favorite_color(class="form-control", value = name_to_update.favorite_color)}}
-          <br>
-          {{form.submit(class="btn btn-success")}}
+    <form action="/update/{{name_to_update.id}}" method="POST">
+        {{form.hidden_tag()}}
+        {{form.name.label(class="form-label")}}
+        {{form.name(class="form-control", value = name_to_update.name)}}
+        <br>
+        {{form.email.label(class="form-label")}}
+        {{form.email(class="form-control", value = name_to_update.email)}}
+        <br>
+        {{form.favorite_color.label(class="form-label")}}
+        {{form.favorite_color(class="form-control", value = name_to_update.favorite_color)}}
+        <br>
+        {{form.submit(class="btn btn-success")}}
+        <a href="{{url_for('delete', id =id )}}" class="btn btn-danger">Delete</a>
 
-     </form>
+
+    </form>
 </div>
 
 <br><br><br>

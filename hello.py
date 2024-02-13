@@ -59,7 +59,7 @@ def update(id):
             flash("Error ! Please check your data.")
             return render_template("user_update.html", form=form, name_to_update=name_to_update)
     else:
-        return render_template("user_update.html", form=form, name_to_update=name_to_update)
+        return render_template("user_update.html", form=form, name_to_update=name_to_update, id=id)
             
 
 
@@ -67,6 +67,34 @@ def update(id):
 class NameForm(FlaskForm):
     name = StringField("What is your name?", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+# delete the user
+@app.route('/delete/<int:id>')
+def delete(id):
+    user_to_delete = Users.query.get_or_404(id)
+    name = None
+    form = UserForm()
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash("User delete successfully!")
+        our_users = Users.query.order_by(Users.name).all()
+        return render_template("add_user.html", form=form, name=name, our_users=our_users)
+        
+    except:
+        flash("Opps! something error !")
+        return render_template("add_user.html", form=form, name=name, our_users=our_users)
+
+        
+        
+    
+
+
+
+
+
+
 
 
 # create a route decorator
