@@ -1,12 +1,24 @@
-# import list
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------import list----------------------------------
+# -----------------------------------------------------------------------------------------
 from flask import Flask, render_template, flash,request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
+
+
+
+
+
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------Database----------------------------------
+# -----------------------------------------------------------------------------------------
 
 # create a flask instance
 app = Flask(__name__)
@@ -22,79 +34,14 @@ migrate = Migrate(app,db)
 app.config["SECRET_KEY"] = "secretkey"
 
 
-# create a model
-class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    favorite_color = db.Column(db.String(100))
-    data_added = db.Column(db.DateTime, default=datetime.utcnow())
-
-    def __repr__(self):
-        return "<Name %r>" % self.name
-
-
-# Create a Form Class User
-class UserForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired()])
-    favorite_color = StringField("Favorite Color")
-    submit = SubmitField("Submit")
-
-
-# Update DB Data
-@app.route("/update/<int:id>", methods=["GET", "POST"])
-def update(id):
-    form = UserForm()
-    name_to_update = Users.query.get_or_404(id)
-    if request.method == "POST":
-        name_to_update.name = request.form['name']
-        name_to_update.email = request.form['email']
-        name_to_update.favorite_color = request.form['favorite_color']
-        try:
-            db.session.commit()
-            flash("User update Succesfully!")
-            return render_template("user_update.html", form=form, name_to_update=name_to_update)
-        except:
-            flash("Error ! Please check your data.")
-            return render_template("user_update.html", form=form, name_to_update=name_to_update)
-    else:
-        return render_template("user_update.html", form=form, name_to_update=name_to_update, id=id)
-            
-
-
-# Create a Form Class
-class NameForm(FlaskForm):
-    name = StringField("What is your name?", validators=[DataRequired()])
-    submit = SubmitField("Submit")
-
-
-# delete the user
-@app.route('/delete/<int:id>')
-def delete(id):
-    user_to_delete = Users.query.get_or_404(id)
-    name = None
-    form = UserForm()
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash("User delete successfully!")
-        our_users = Users.query.order_by(Users.name).all()
-        return render_template("add_user.html", form=form, name=name, our_users=our_users)
-        
-    except:
-        flash("Opps! something error !")
-        return render_template("add_user.html", form=form, name=name, our_users=our_users)
-
-        
-        
-    
 
 
 
 
 
-
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------HomPages----------------------------------
+# -----------------------------------------------------------------------------------------
 
 
 # create a route decorator
@@ -114,14 +61,10 @@ def home():
     )
 
 
-# route for user with dynamic name
-@app.route("/user/<name>")
-def user(name):
-    return render_template("user.html", username=name)
 
-
-# create a custom error
-
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------Custome Error ----------------------------------
+# -----------------------------------------------------------------------------------------
 
 # invalid URL
 @app.errorhandler(404)
@@ -135,6 +78,26 @@ def internal_server_error(e):
     return render_template("500.html"), 500
 
 
+
+
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------Users Name----------------------------------
+# -----------------------------------------------------------------------------------------
+
+# route for user with dynamic name
+@app.route("/user/<name>")
+def user(name):
+    return render_template("user.html", username=name)
+
+
+# Create a Form Class
+class NameForm(FlaskForm):
+    name = StringField("What is your name?", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+   
+
+
 # Create Name Page
 @app.route("/name", methods=["GET", "POST"])
 def name():
@@ -146,6 +109,57 @@ def name():
         form.name.data = ""
         flash("Form submit success")
     return render_template("nameinput.html", name=name, form=form)
+
+
+
+
+
+
+
+
+
+
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------Users Database----------------------------------
+# -----------------------------------------------------------------------------------------
+
+
+# create a model
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    favorite_color = db.Column(db.String(100))
+    data_added = db.Column(db.DateTime, default=datetime.utcnow())
+    # do some password
+    password_hash = db.Column(db.String(255))
+    
+    @property
+    def password(self):
+        raise AttributeError('Password is not a Readable Attribute!')
+    
+    @password.setter
+    def password(self,password):
+        self.password_hash = generate_password_hash(password)
+        
+    def verify_password(self,password):
+        return check_password_hash(self.password_hash,password) 
+
+    def __repr__(self):
+        return "<Name %r>" % self.name
+
+
+
+
+
+
+# Create a Form Class User
+class UserForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    favorite_color = StringField("Favorite Color")
+    submit = SubmitField("Submit")
 
 
 @app.route("/user/add", methods=["GET", "POST"])
@@ -170,6 +184,58 @@ def add_user():
             form.email.data = ""
             form.favorite_color.data = ""
     return render_template("add_user.html", form=form, name=name, our_users=our_users)
+
+
+
+
+# Update DB user
+@app.route("/update/<int:id>", methods=["GET", "POST"])
+def update(id):
+    form = UserForm()
+    name_to_update = Users.query.get_or_404(id)
+    if request.method == "POST":
+        name_to_update.name = request.form['name']
+        name_to_update.email = request.form['email']
+        name_to_update.favorite_color = request.form['favorite_color']
+        try:
+            db.session.commit()
+            flash("User update Succesfully!")
+            return render_template("user_update.html", form=form, name_to_update=name_to_update)
+        except:
+            flash("Error ! Please check your data.")
+            return render_template("user_update.html", form=form, name_to_update=name_to_update)
+    else:
+        return render_template("user_update.html", form=form, name_to_update=name_to_update, id=id)
+            
+
+
+
+# delete DB user
+@app.route('/delete/<int:id>')
+def delete(id):
+    user_to_delete = Users.query.get_or_404(id)
+    name = None
+    form = UserForm()
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash("User delete successfully!")
+        our_users = Users.query.order_by(Users.name).all()
+        return render_template("add_user.html", form=form, name=name, our_users=our_users)
+        
+    except:
+        flash("Opps! something error !")
+        return render_template("add_user.html", form=form, name=name, our_users=our_users)
+
+
+
+
+
+
+
+
+
+
 
 
 # Create database tables
