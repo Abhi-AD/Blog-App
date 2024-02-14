@@ -11,7 +11,7 @@ from wtforms import (
     ValidationError,
 )
 from wtforms.validators import DataRequired, EqualTo, Length
-from datetime import datetime
+from datetime import datetime, date
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -199,12 +199,12 @@ def update(id):
             db.session.commit()
             flash("User update Succesfully!")
             return render_template(
-                "user_update.html", form=form, name_to_update=name_to_update
+                "user_update.html", form=form, name_to_update=name_to_update, id=id
             )
         except:
             flash("Error ! Please check your data.")
             return render_template(
-                "user_update.html", form=form, name_to_update=name_to_update
+                "user_update.html", form=form, name_to_update=name_to_update, id=id
             )
     else:
         return render_template(
@@ -268,9 +268,25 @@ def test_password():
         email=email,
         password=password,
         form=form,
-        passed = passed,
+        passed=passed,
         password_to_check=password_to_check,
     )
+
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------JSON Things----------------------------------
+# -----------------------------------------------------------------------------------------
+@app.route("/date")
+def get_current_date():
+    favorite_pizza = {
+        "name": "Vegan Veggie",
+        "name1": "Baby Bell Peppers",
+        "name2": "Daiya Vegan Mozzarella",
+        "name3": "Oregano",
+    }
+
+    return favorite_pizza
+    # return {"Date": date.today()}
 
 
 # Create database tables
