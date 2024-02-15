@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------------------
 # -----------------------------------------import list----------------------------------
 # -----------------------------------------------------------------------------------------
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -66,13 +66,13 @@ def home():
 # invalid URL
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template("404.html"), 404
+    return render_template("Custom Error/404.html"), 404
 
 
 # Internal Server Error
 @app.errorhandler(500)
 def internal_server_error(e):
-    return render_template("500.html"), 500
+    return render_template("Custom Error/500.html"), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ def internal_server_error(e):
 # route for user with dynamic name
 @app.route("/user/<name>")
 def user(name):
-    return render_template("user.html", username=name)
+    return render_template("Users Name/user.html", username=name)
 
 
 # Create a Form Class
@@ -102,7 +102,7 @@ def name():
         name = form.name.data
         form.name.data = ""
         flash("Form submit success")
-    return render_template("nameinput.html", name=name, form=form)
+    return render_template("Users Name/nameinput.html", name=name, form=form)
 
 
 # -----------------------------------------------------------------------------------------
@@ -184,7 +184,9 @@ def add_user():
             form.email.data = ""
             form.favorite_color.data = ""
             form.password_hash.data = ""
-    return render_template("add_user.html", form=form, name=name, our_users=our_users)
+    return render_template(
+        "Users/add_user.html", form=form, name=name, our_users=our_users
+    )
 
 
 # Update DB user
@@ -200,38 +202,44 @@ def update(id):
             db.session.commit()
             flash("User update Succesfully!")
             return render_template(
-                "user_update.html", form=form, name_to_update=name_to_update, id=id
+                "Users/user_update.html",
+                form=form,
+                name_to_update=name_to_update,
+                id=id,
             )
         except:
             flash("Error ! Please check your data.")
             return render_template(
-                "user_update.html", form=form, name_to_update=name_to_update, id=id
+                "Users/user_update.html",
+                form=form,
+                name_to_update=name_to_update,
+                id=id,
             )
     else:
         return render_template(
-            "user_update.html", form=form, name_to_update=name_to_update, id=id
+            "Users/user_update.html", form=form, name_to_update=name_to_update, id=id
         )
 
 
 # delete DB user
 @app.route("/delete/<int:id>")
 def delete(id):
-    user_to_delete = Users.query.get_or_404(id)
+    post_to_delete = Users.query.get_or_404(id)
     name = None
     form = UserForm()
     try:
-        db.session.delete(user_to_delete)
+        db.session.delete(post_to_delete)
         db.session.commit()
         flash("User delete successfully!")
-        our_users = Users.query.order_by(Users.name).all()
+        our_users = Users.query.order_by(Users.name)
         return render_template(
-            "add_user.html", form=form, name=name, our_users=our_users
+            "Users/add_user.html", form=form, name=name, our_users=our_users
         )
 
     except:
         flash("Opps! something error !")
         return render_template(
-            "add_user.html", form=form, name=name, our_users=our_users
+            "Users/add_user.html", form=form, name=name, our_users=our_users
         )
 
 
@@ -265,7 +273,7 @@ def test_password():
             passed = False  # Or any other appropriate action
         # passed = check_password_hash(password_to_check.password_hash, password)
     return render_template(
-        "test_password.html",
+        "Users/test_password.html",
         email=email,
         password=password,
         form=form,
@@ -333,32 +341,59 @@ def add_post():
         db.session.add(post)
         db.session.commit()
         flash("Blog Posts Submitted Successfully!")
-    return render_template("add_post.html", form=form)
+    return render_template("Posts/add_post.html", form=form)
 
 
-
-
-@app.route('/posts')
+# all view
+@app.route("/posts")
 def posts():
     posts = Posts.query.order_by(Posts.data_added)
-    return render_template("posts.html", posts = posts)
+    return render_template("Posts/posts.html", posts=posts)
 
 
+# current view
+@app.route("/posts/<int:id>")
+def post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template("Posts/post.html", post=post)
 
 
+# update post
+@app.route("/update_post/<int:id>", methods=["GET", "POST"])
+def update_post(id):
+    post = Posts.query.get_or_404(id)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.author = form.author.data
+        post.slug = form.slug.data
+        post.content = form.content.data
+        db.session.add(post)
+        db.session.commit()
+        flash("Post Has Been Update!")
+        return redirect(url_for("post", id=post.id))
+    form.title.data = post.title
+    form.author.data = post.author
+    form.slug.data = post.slug
+    form.content.data = post.content
+    return render_template("Posts/update_post.html", form=form, post=post)
 
 
-
-
-
-
-
-
-
-
-
-
-
+# update post
+@app.route("/delete_post/<int:id>")
+def delete_post(id):
+    form = PostForm()
+    post_to_delete = Posts.query.get_or_404(id)
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        flash("Posts delete successfully!")
+        posts = Posts.query.order_by(Posts.data_added)
+        return render_template("Posts/add_post.html", form=form, posts=posts)
+    except:
+        flash("Opps! something error !")
+        posts = Posts.query.order_by(Posts.data_added)
+        return render_template("Posts/add_post.html", form=form, posts=posts)
 
 
 # Create database tables

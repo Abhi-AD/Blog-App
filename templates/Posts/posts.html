@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+
+{% for post in posts %}
+<div class="shadow p-3 mb-5 bg-body rounded">
+     <h2><a href="{{url_for('post', id=post.id)}}">{{post.title}}</a></h2><br>
+     <small> By: {{post.author}}<br>
+          {{post.data_added}}</small><br>
+     {{post.slug}}<br>
+     {{post.content}}<br><br>
+     <a href="{{url_for('post', id = post.id)}}" class="btn btn-outline-primary btn-sm">View Post..</a>
+     <a href="{{url_for('update_post', id = post.id)}}" class="btn btn-outline-primary btn-sm">Update</a>
+     <a href="{{url_for('delete_post', id = post.id)}}" class="btn btn-outline-danger btn-sm">Delete</a>
+
+</div>
+<br>
+{% endfor %}
+
+
+{% endblock content %}
