@@ -15,6 +15,7 @@ from datetime import datetime, date
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import TextArea
 
 
 # -----------------------------------------------------------------------------------------
@@ -287,6 +288,77 @@ def get_current_date():
 
     return favorite_pizza
     # return {"Date": date.today()}
+
+
+# -----------------------------------------------------------------------------------------
+# -----------------------------------------Posts----------------------------------
+# -----------------------------------------------------------------------------------------
+
+
+# Create a database
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text)
+    author = db.Column(db.String(100))
+    data_added = db.Column(db.DateTime, default=datetime.utcnow())
+    slug = db.Column(db.String(255))
+
+
+#  create a form
+class PostForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    content = StringField("Content", validators=[DataRequired()], widget=TextArea())
+    author = StringField("Author", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit = SubmitField()
+
+
+# Add Post Pages
+@app.route("/add_post", methods=["GET", "POST"])
+def add_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Posts(
+            title=form.title.data,
+            content=form.content.data,
+            author=form.author.data,
+            slug=form.slug.data,
+        )
+        form.title.data = ""
+        form.content.data = ""
+        form.author.data = ""
+        form.slug.data = ""
+
+        db.session.add(post)
+        db.session.commit()
+        flash("Blog Posts Submitted Successfully!")
+    return render_template("add_post.html", form=form)
+
+
+
+
+@app.route('/posts')
+def posts():
+    posts = Posts.query.order_by(Posts.data_added)
+    return render_template("posts.html", posts = posts)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Create database tables

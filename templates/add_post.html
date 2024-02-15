@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Add Blog Post:</h1>
+<br>
+<div class="shadow p-3 mb-5 bg-white rounded">
+     <form action="" method="POST">
+          {{form.hidden_tag()}}
+          {{form.title.label(class="form-label")}}
+          {{form.title(class="form-control")}}
+          <br>
+          {{form.author.label(class="form-label")}}
+          {{form.author(class="form-control")}}
+          <br>
+          {{form.slug.label(class="form-label")}}
+          {{form.slug(class="form-control")}}
+          <br>
+          {{form.content.label(class="form-label")}}
+          {{form.content(class="form-control", rows = "5")}}
+          <br>
+          {{form.submit(class="btn btn-success")}}
+
+     </form>
+</div>
+
+{% endblock content %}
